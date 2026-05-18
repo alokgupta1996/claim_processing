@@ -141,6 +141,20 @@ def _normalize_illness_uw3(value: object) -> str:
     return mapping.get(key, "Other")
 
 
+def _normalize_illness_uwx(value: object) -> str:
+    mapping = {
+        "PEC_CHRONIC": "PEC/Chronic",
+        "CHRONIC": "PEC/Chronic",
+        "ACUTE": "Acute",
+        "MENTAL": "Mental Health",
+        "MENTAL HEALTH": "Mental Health",
+        "ONCOLOGY": "Oncology",
+        "MATERNITY": "Maternity",
+    }
+    key = _clean_text(value).upper()
+    return mapping.get(key, "Other")
+
+
 def _normalize_benefit(base_value: object, emergency_hint: object | None = None) -> str:
     if emergency_hint is not None and _clean_text(emergency_hint).upper() == "EMERGENCY":
         return "Emergency"
@@ -166,6 +180,41 @@ def _add_flags(claims_df: pd.DataFrame) -> pd.DataFrame:
 
 def _na_float_column(length: int) -> pd.Series:
     return pd.Series([pd.NA] * length, dtype="Float64")
+
+
+def _country_from_policy_ref(policy_ref: object) -> str:
+    text = _clean_text(policy_ref).upper()
+    if "-OM-" in text:
+        return "Oman"
+    if "-SA-" in text:
+        return "Saudi Arabia"
+    if "-QA-" in text:
+        return "Qatar"
+    return "Unknown"
+
+
+def _country_from_currency(currency: object) -> str:
+    ccy = _clean_text(currency).upper()
+    mapping = {
+        "OMR": "Oman",
+        "USD": "Saudi Arabia",
+        "QAR": "Qatar",
+    }
+    return mapping.get(ccy, "Unknown")
+
+
+def _to_usd(amount: object, currency: object) -> float:
+    value = float(pd.to_numeric(amount))
+    ccy = _clean_text(currency).upper()
+    if ccy == "OMR":
+        return round(value * 2.59, 2)
+    if ccy == "QAR":
+        return round(value / 3.64, 2)
+    return round(value, 2)
+
+
+def _parse_date_generic(value: object) -> str:
+    return pd.to_datetime(value).date().isoformat()
 
 
 def _transform_uw1_members(df: pd.DataFrame) -> pd.DataFrame:
@@ -284,6 +333,69 @@ def _transform_uw3_members(df: pd.DataFrame) -> pd.DataFrame:
             "deductible_usd": _na_float_column(len(df)),
             "member_status": "Active",
             "_source_join_key": df["Certificate No"].map(_clean_text),
+        }
+    )
+    return out
+
+
+def _transform_uwx_members(df: pd.DataFrame) -> pd.DataFrame:
+    gender_map = {"M": "Male", "F": "Female"}
+    relationship_map = {
+        "EMP": "Employee",
+        "E": "Employee",
+        "SPO": "Spouse",
+        "S": "Spouse",
+        "CHD": "Child",
+        "C": "Child",
+    }
+    network_map = {
+        "GOLD_PLUS": "Gold",
+        "GOLD": "Gold",
+        "NETWORK_1": "Gold",
+        "NETWORK_B": "Silver",
+        "SILVER": "Silver",
+        "NETWORK_2": "Silver",
+        "BRONZE": "Bronze",
+        "NETWORK_C": "Bronze",
+        "NETWORK_3": "Bronze",
+    }
+
+    country_series = df["Policy Ref"].map(_country_from_policy_ref)
+    unknown_country_mask = country_series == "Unknown"
+    if unknown_country_mask.any():
+        country_series.loc[unknown_country_mask] = df.loc[
+            unknown_country_mask, "Currency"
+        ].map(_country_from_currency)
+
+    out = pd.DataFrame(
+        {
+            "master_member_id": "UWX_" + df["Member UID"].astype(str).map(_clean_text),
+            "source_uw": "UWX",
+            "policy_number": df["Policy Ref"].map(_clean_text),
+            "country": country_series,
+            "insurer_name": "FutureCare",
+            "member_name": df["Full Name"].map(_title_case),
+            "gender": df["Sex"].map(
+                lambda x: gender_map.get(_clean_text(x).upper(), _title_case(x))
+            ),
+            "relationship": df["Relation Type"].map(
+                lambda x: relationship_map.get(_clean_text(x).upper(), "Other")
+            ),
+            "date_of_birth": df["DOB"].map(_parse_date_generic),
+            "age": pd.to_numeric(df["Age Years"]).astype(int),
+            "age_group": df["Age Years"].map(_to_age_group),
+            "nationality_code": df["Nationality ISO"].map(_clean_text),
+            "benefit_class": df["Plan Level"].map(_clean_text),
+            "network_tier": df["Network Plan"].map(
+                lambda x: network_map.get(_clean_text(x).upper(), _title_case(x))
+            ),
+            "annual_premium_usd": df.apply(
+                lambda row: _to_usd(row["Annual Premium Local"], row["Currency"]), axis=1
+            ),
+            "copay_pct": _na_float_column(len(df)),
+            "deductible_usd": _na_float_column(len(df)),
+            "member_status": "Active",
+            "_source_join_key": df["Member UID"].map(_clean_text),
         }
     )
     return out
@@ -435,6 +547,52 @@ def _transform_uw3_claims(df: pd.DataFrame, members_df: pd.DataFrame) -> pd.Data
     return _add_flags(claims)
 
 
+def _transform_uwx_claims(df: pd.DataFrame, members_df: pd.DataFrame) -> pd.DataFrame:
+    out = _enrich_claims_with_member_keys(df, members_df, "Member UID")
+    claim_date = out["Submission Dt"].map(_parse_date_generic)
+    service_date = out["Service Dt"].map(_parse_date_generic)
+
+    claims = pd.DataFrame(
+        {
+            "master_claim_id": "UWX_" + out["Txn ID"].map(_clean_text),
+            "source_uw": "UWX",
+            "policy_number": out["policy_number"],
+            "country": out["country"],
+            "master_member_id": out["master_member_id"],
+            "member_name": out["member_name"],
+            "gender": out["gender"],
+            "relationship": out["relationship"],
+            "age": out["age"],
+            "age_group": out["age_group"],
+            "benefit_class": out["benefit_class"],
+            "network_tier": out["network_tier"],
+            "claim_id": out["Txn ID"].map(_clean_text),
+            "claim_date": claim_date,
+            "service_date": service_date,
+            "month": pd.to_datetime(service_date).dt.month.astype(int),
+            "quarter": service_date.map(_derive_quarter),
+            "year": pd.to_datetime(service_date).dt.year.astype(int),
+            "icd10_code": out["Diagnosis Code"].map(_normalize_icd10),
+            "diagnosis_description": out["Diagnosis Narrative"].map(_title_case),
+            "illness_type": out["Chronicity"].map(_normalize_illness_uwx),
+            "benefit_type": out["Service Bucket"].map(_normalize_benefit),
+            "provider_name": out["Provider Group"].map(_title_case),
+            "provider_city": out["Provider City"].map(_clean_text),
+            "billed_amount_usd": out.apply(
+                lambda row: _to_usd(row["Gross Amt"], row["Currency"]), axis=1
+            ),
+            "paid_amount_usd": out.apply(
+                lambda row: _to_usd(row["Insurer Paid"], row["Currency"]), axis=1
+            ),
+            "copay_usd": out.apply(
+                lambda row: _to_usd(row["Member Copay"], row["Currency"]), axis=1
+            ),
+            "episode_id": out["Case Ref"].map(_clean_text),
+        }
+    )
+    return _add_flags(claims)
+
+
 def transform_sources(
     sources: Dict[str, Dict[str, pd.DataFrame]],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -454,6 +612,10 @@ def transform_sources(
         uw3_members = _transform_uw3_members(sources["UW3"]["members"])
         transformed_members_by_uw["UW3"] = uw3_members
         member_frames.append(uw3_members)
+    if "UWX" in sources:
+        uwx_members = _transform_uwx_members(sources["UWX"]["members"])
+        transformed_members_by_uw["UWX"] = uwx_members
+        member_frames.append(uwx_members)
 
     if not member_frames:
         raise ValueError("No UW sources available for transformation.")
@@ -469,6 +631,10 @@ def transform_sources(
     if "UW3" in sources:
         claims_frames.append(
             _transform_uw3_claims(sources["UW3"]["claims"], transformed_members_by_uw["UW3"])
+        )
+    if "UWX" in sources:
+        claims_frames.append(
+            _transform_uwx_claims(sources["UWX"]["claims"], transformed_members_by_uw["UWX"])
         )
 
     if not claims_frames:
