@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 from datetime import datetime
+import logging
 from pathlib import Path
+import time
 from typing import Dict, List, Tuple
 from uuid import uuid4
 
 import pandas as pd
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 
 from claims_pipeline.config import UnderwriterSpec, get_underwriter_specs
 from claims_pipeline.ingestion import read_underwriter_sources_from_bytes
+from claims_pipeline.logging_config import setup_logging
 from claims_pipeline.mapping import (
     apply_mappings_to_sources,
     mapping_frame_to_dict,
@@ -19,12 +22,49 @@ from claims_pipeline.pipeline import run_pipeline_from_sources
 from claims_pipeline.template_detection import detect_underwriter_template
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+setup_logging(service_name="claims-api")
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Claims Pipeline API",
     description="Upload UW Excel files and run the deterministic pipeline.",
     version="1.0.0",
 )
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):  # type: ignore[no-untyped-def]
+    req_id = uuid4().hex[:8]
+    start = time.perf_counter()
+    logger.info(
+        "Request started id=%s method=%s path=%s",
+        req_id,
+        request.method,
+        request.url.path,
+    )
+    try:
+        response = await call_next(request)
+    except Exception:
+        elapsed_ms = round((time.perf_counter() - start) * 1000, 2)
+        logger.exception(
+            "Request failed id=%s method=%s path=%s latency_ms=%s",
+            req_id,
+            request.method,
+            request.url.path,
+            elapsed_ms,
+        )
+        raise
+
+    elapsed_ms = round((time.perf_counter() - start) * 1000, 2)
+    logger.info(
+        "Request completed id=%s method=%s path=%s status=%s latency_ms=%s",
+        req_id,
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed_ms,
+    )
+    return response
 
 
 def _safe_slug(value: str) -> str:
@@ -130,6 +170,12 @@ async def upload_and_run(
     run_label: str | None = Form(None),
     pbix_file_name: str = Form("claims_dashboard.pbix"),
 ) -> Dict[str, object]:
+    logger.info(
+        "Upload request received files=%s mode=%s ai_engine=%s",
+        len(files),
+        run_mode,
+        ai_engine,
+    )
     valid_modes = {"full", "pdf_only", "powerbi_handoff"}
     if run_mode not in valid_modes:
         raise HTTPException(status_code=400, detail=f"run_mode must be one of {sorted(valid_modes)}")
@@ -168,6 +214,7 @@ async def upload_and_run(
             }
 
     if not selected_by_uw:
+        logger.warning("No files matched templates above threshold=%s", min_detection_score)
         raise HTTPException(
             status_code=400,
             detail="No upload matched known templates above minimum detection score.",
@@ -191,6 +238,7 @@ async def upload_and_run(
         )
         standardized_sources = apply_mappings_to_sources(raw_sources, mappings, expected_columns)
     except Exception as exc:  # noqa: BLE001
+        logger.exception("Auto mapping failed")
         raise HTTPException(status_code=422, detail=f"Unable to map uploaded templates: {exc}") from exc
 
     tag = _safe_slug(run_label or datetime.now().strftime("api_%Y%m%d_%H%M%S") + f"_{uuid4().hex[:6]}")
@@ -213,7 +261,15 @@ async def upload_and_run(
             pbix_file_name=pbix_file_name,
         )
     except Exception as exc:  # noqa: BLE001
+        logger.exception("Pipeline execution failed")
         raise HTTPException(status_code=500, detail=f"Pipeline run failed: {exc}") from exc
+
+    logger.info(
+        "Upload run completed status=%s files_selected=%s run_label=%s",
+        result["status"],
+        len(selected_by_uw),
+        tag,
+    )
 
     return {
         "status": result["status"],

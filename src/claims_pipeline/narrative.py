@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
+import time
 from typing import Dict, List
 
 from claims_pipeline.usage_metrics import (
     record_api_call,
     record_openai_usage_from_response,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _fallback_narrative(context: Dict[str, object]) -> Dict[str, object]:
@@ -52,11 +56,13 @@ def _llm_narrative(context: Dict[str, object]) -> Dict[str, object] | None:
     deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
     api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2025-01-01-preview")
     if not api_key or not endpoint or not deployment:
+        logger.info("LLM narrative disabled: Azure OpenAI environment not configured")
         return None
 
     try:
         from openai import AzureOpenAI
-    except Exception:
+    except Exception as exc:
+        logger.warning("LLM narrative disabled: openai package import failed: %s", exc.__class__.__name__)
         return None
 
     client = AzureOpenAI(
@@ -88,6 +94,7 @@ def _llm_narrative(context: Dict[str, object]) -> Dict[str, object] | None:
     )
 
     try:
+        started = time.perf_counter()
         response = client.chat.completions.create(
             model=deployment,
             messages=[
@@ -102,8 +109,14 @@ def _llm_narrative(context: Dict[str, object]) -> Dict[str, object] | None:
             ],
             temperature=0.15,
         )
+        elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
         record_api_call(kind="chat_completions", model=deployment, success=True)
         record_openai_usage_from_response(response, model=deployment)
+        logger.info(
+            "LLM narrative call success model=%s latency_ms=%s",
+            deployment,
+            elapsed_ms,
+        )
         text = response.choices[0].message.content or ""
         cleaned = text.strip()
         if cleaned.startswith("```"):
@@ -119,8 +132,13 @@ def _llm_narrative(context: Dict[str, object]) -> Dict[str, object] | None:
                 return None
             parsed = json.loads(cleaned[start : end + 1])
         return parsed if isinstance(parsed, dict) else None
-    except Exception:
+    except Exception as exc:
         record_api_call(kind="chat_completions", model=deployment, success=False)
+        logger.warning(
+            "LLM narrative call failed model=%s error=%s",
+            deployment,
+            exc.__class__.__name__,
+        )
         return None
 
 

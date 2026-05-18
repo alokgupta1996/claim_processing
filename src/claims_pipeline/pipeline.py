@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Dict
 
@@ -13,6 +14,8 @@ from claims_pipeline.report_generator import generate_claims_pdf_report
 from claims_pipeline.transform import transform_sources
 from claims_pipeline.usage_metrics import reset_usage_metrics, write_usage_metrics
 from claims_pipeline.validation import validate_transformed_data, write_validation_report
+
+logger = logging.getLogger(__name__)
 
 
 def run_pipeline_from_sources(
@@ -29,6 +32,7 @@ def run_pipeline_from_sources(
     valid_modes = {"full", "pdf_only", "powerbi_handoff"}
     if run_mode not in valid_modes:
         raise ValueError(f"run_mode must be one of {sorted(valid_modes)}")
+    logger.info("run_pipeline_from_sources started mode=%s", run_mode)
 
     processed_dir.mkdir(parents=True, exist_ok=True)
     outputs_dir.mkdir(parents=True, exist_ok=True)
@@ -45,6 +49,11 @@ def run_pipeline_from_sources(
     )
 
     master_census, master_claims = transform_sources(sources)  # type: ignore[arg-type]
+    logger.info(
+        "Transform complete members=%s claims=%s",
+        len(master_census),
+        len(master_claims),
+    )
 
     master_census_path = processed_dir / "master_census.csv"
     master_claims_path = processed_dir / "master_claims.csv"
@@ -54,11 +63,13 @@ def run_pipeline_from_sources(
     master_claims.to_csv(master_claims_path, index=False)
 
     db_row_counts = write_sqlite_database(master_census, master_claims, db_path)
+    logger.info("SQLite write complete rows=%s db=%s", db_row_counts, db_path)
     powerbi_tables = build_powerbi_tables(master_census, master_claims)
     powerbi_outputs: Dict[str, str] = {}
     if run_mode in {"full", "powerbi_handoff"}:
         powerbi_dir.mkdir(parents=True, exist_ok=True)
         powerbi_outputs = write_powerbi_tables(powerbi_tables, powerbi_dir)
+        logger.info("Power BI exports generated files=%s", len(powerbi_outputs))
 
     report_pdf_path = generate_claims_pdf_report(
         master_census=master_census,
@@ -67,6 +78,7 @@ def run_pipeline_from_sources(
         output_path=report_path,
         use_llm_narrative=use_llm_narrative,
     )
+    logger.info("Report generated path=%s", report_pdf_path)
 
     pbix_handoff: Dict[str, str] | None = None
     if run_mode == "powerbi_handoff":
@@ -76,10 +88,16 @@ def run_pipeline_from_sources(
             outputs_dir=outputs_dir,
             pbix_file_name=pbix_file_name,
         )
+        logger.info("PBIX handoff package generated at=%s", pbix_handoff["package_dir"])
 
     validation_report = validate_transformed_data(master_census, master_claims)
     write_validation_report(validation_report, validation_path)
     usage_report_path = write_usage_metrics(usage_metrics_path)
+    logger.info(
+        "Pipeline finished status=%s validation_passed=%s",
+        "success" if validation_report["passed"] else "failed_validation",
+        validation_report["passed"],
+    )
 
     return {
         "status": "success" if validation_report["passed"] else "failed_validation",

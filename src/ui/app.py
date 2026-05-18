@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import io
+import logging
 from pathlib import Path
 from typing import Dict
 import sys
@@ -17,6 +18,7 @@ if str(SRC_ROOT) not in sys.path:
 
 from claims_pipeline.config import UnderwriterSpec, get_underwriter_specs
 from claims_pipeline.ingestion import read_underwriter_sources_from_bytes
+from claims_pipeline.logging_config import setup_logging
 from claims_pipeline.mapping import (
     apply_mappings_to_sources,
     apply_profile_mapping_to_suggestions,
@@ -30,6 +32,9 @@ from claims_pipeline.mapping_profiles import (
 )
 from claims_pipeline.pipeline import run_pipeline_from_sources
 from claims_pipeline.template_detection import detect_underwriter_template
+
+setup_logging(service_name="claims-ui")
+logger = logging.getLogger(__name__)
 
 
 def _build_expected_columns(specs: Dict[str, UnderwriterSpec]) -> Dict[str, Dict[str, list[str]]]:
@@ -248,6 +253,7 @@ def main() -> None:
 
     specs = get_underwriter_specs(PROJECT_ROOT)
     expected_columns = _build_expected_columns(specs)
+    logger.info("UI loaded with template_count=%s", len(specs))
 
     st.sidebar.header("Output Settings")
     run_mode_label = st.sidebar.selectbox(
@@ -496,6 +502,11 @@ def main() -> None:
                 run_mode=run_mode,
                 pbix_file_name=pbix_file_name,
             )
+            logger.info(
+                "UI pipeline run completed status=%s mode=%s",
+                result["status"],
+                run_mode,
+            )
             if result["status"] == "success":
                 st.success("Pipeline executed successfully.")
             else:
@@ -547,6 +558,7 @@ def main() -> None:
                         mime="application/zip",
                     )
         except Exception as exc:  # noqa: BLE001
+            logger.exception("UI pipeline run failed")
             st.error(f"Pipeline run failed: {exc}")
 
 

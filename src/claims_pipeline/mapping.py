@@ -5,6 +5,7 @@ import logging
 import math
 import os
 import re
+import time
 import sys
 from difflib import SequenceMatcher
 from typing import Dict, Iterable, List, Tuple
@@ -104,14 +105,23 @@ def _embedding_scores(
     client = OpenAI()
     all_texts = expected_columns + actual_columns
     try:
+        started = time.perf_counter()
         response = client.embeddings.create(
             model="text-embedding-3-small",
             input=all_texts,
         )
+        elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
         record_api_call(kind="embeddings", model="text-embedding-3-small", success=True)
         record_openai_usage_from_response(response, model="text-embedding-3-small")
+        logger.info(
+            "Embedding call success model=%s texts=%s latency_ms=%s",
+            "text-embedding-3-small",
+            len(all_texts),
+            elapsed_ms,
+        )
     except Exception:
         record_api_call(kind="embeddings", model="text-embedding-3-small", success=False)
+        logger.warning("Embedding call failed model=%s", "text-embedding-3-small")
         return {}
 
     vectors = [item.embedding for item in response.data]
@@ -256,6 +266,7 @@ def _llm_fallback_mapping(
         return {}
 
     try:
+        started = time.perf_counter()
         response = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -264,10 +275,24 @@ def _llm_fallback_mapping(
             ],
             temperature=0.0,
         )
+        elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
         record_api_call(kind="chat_completions", model=model_name, success=True)
         record_openai_usage_from_response(response, model=model_name)
+        logger.info(
+            "LLM mapping fallback success model=%s expected_cols=%s actual_cols=%s latency_ms=%s",
+            model_name,
+            len(expected_columns),
+            len(actual_columns),
+            elapsed_ms,
+        )
     except Exception:
         record_api_call(kind="chat_completions", model=model_name, success=False)
+        logger.warning(
+            "LLM mapping fallback failed model=%s expected_cols=%s actual_cols=%s",
+            model_name,
+            len(expected_columns),
+            len(actual_columns),
+        )
         return {}
 
     content = response.choices[0].message.content if response.choices else ""

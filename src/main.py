@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import logging
 from pathlib import Path
 
+from claims_pipeline.logging_config import setup_logging
 from claims_pipeline.pipeline import run_pipeline
 
 
@@ -67,7 +69,10 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    setup_logging(service_name="claims-cli")
+    logger = logging.getLogger(__name__)
     args = parse_args()
+    logger.info("Starting pipeline run mode=%s", args.run_mode)
     result = run_pipeline(
         base_dir=args.base_dir,
         processed_dir=args.processed_dir,
@@ -91,6 +96,7 @@ def main() -> int:
         print(f"expected_pbix_path: {result['pbix_handoff']['expected_pbix_path']}")
     print(f"report_pdf: {result['report_pdf_path']}")
     print(f"usage_metrics: {result['usage_metrics_path']}")
+    logger.info("Pipeline completed status=%s", result["status"])
     return 0 if result["status"] == "success" else 1
 
 
