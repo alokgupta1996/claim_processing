@@ -1,0 +1,48 @@
+{
+  "source_uw": "UW3",
+  "country": "Qatar",
+  "file_name": "UW3_QatarGeneral_RawData.xlsx",
+  "members_sheet": "Insured_Members",
+  "claims_sheet": "Claims_Detail",
+  "members_skiprows": 4,
+  "claims_skiprows": 4,
+  "expected_member_rows": 12,
+  "expected_claim_rows": 12,
+  "expected_member_columns": [
+    "Seq",
+    "Certificate No",
+    "Sponsor ID",
+    "Employee Full Name (EN / AR)",
+    "Gender",
+    "Relationship",
+    "DOB (Excel Serial)",
+    "Age",
+    "Nationality",
+    "Benefit Category",
+    "Sub-Network",
+    "Annual Premium (QAR)",
+    "Co-pay %"
+  ],
+  "expected_claim_columns": [
+    "Claim ID",
+    "Cert No",
+    "Member Name",
+    "Submission Date",
+    "Date of Service",
+    "ICD-10 Code",
+    "Disease Description",
+    "Disease Category",
+    "Service Category",
+    "Sub-Type",
+    "Provider Name",
+    "City",
+    "Gross Billed (QAR)",
+    "Discount (QAR)",
+    "Net Billed (QAR)",
+    "Insurer Share (QAR)",
+    "Member Copay (QAR)",
+    "Deductible (QAR)",
+    "Settlement Status"
+  ]
+}
+

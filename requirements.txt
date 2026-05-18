@@ -1,0 +1,12 @@
+pandas==2.2.3
+openpyxl==3.1.5
+pytest==8.3.5
+streamlit==1.46.1
+openai==1.109.1
+matplotlib==3.10.7
+seaborn==0.13.2
+pypdf==5.9.0
+fastapi==0.116.1
+uvicorn==0.35.0
+python-multipart==0.0.20
+sentence-transformers==3.0.1

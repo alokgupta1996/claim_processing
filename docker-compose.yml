@@ -1,0 +1,95 @@
+services:
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claims-streamlit
+    ports:
+      - "8501:8501"
+    environment:
+      PYTHONPATH: /app/src
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY:-}
+      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
+      AZURE_OPENAI_DEPLOYMENT: ${AZURE_OPENAI_DEPLOYMENT:-}
+      AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION:-2025-01-01-preview}
+    volumes:
+      - ./outputs:/app/outputs
+      - ./data:/app/data
+      - ./configs:/app/configs
+      - ./powerbi:/app/powerbi
+    command: [
+      "python",
+      "-m",
+      "streamlit",
+      "run",
+      "src/ui/app.py",
+      "--server.address=0.0.0.0",
+      "--server.port=8501",
+      "--server.headless=true"
+    ]
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claims-api
+    ports:
+      - "8502:8502"
+    environment:
+      PYTHONPATH: /app/src
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY:-}
+      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
+      AZURE_OPENAI_DEPLOYMENT: ${AZURE_OPENAI_DEPLOYMENT:-}
+      AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION:-2025-01-01-preview}
+    volumes:
+      - ./outputs:/app/outputs
+      - ./data:/app/data
+      - ./configs:/app/configs
+      - ./powerbi:/app/powerbi
+    command: [
+      "python",
+      "-m",
+      "uvicorn",
+      "api.app:app",
+      "--host",
+      "0.0.0.0",
+      "--port",
+      "8502"
+    ]
+    restart: unless-stopped
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claims-pipeline
+    profiles: ["batch"]
+    environment:
+      PYTHONPATH: /app/src
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY:-}
+      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
+      AZURE_OPENAI_DEPLOYMENT: ${AZURE_OPENAI_DEPLOYMENT:-}
+      AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION:-2025-01-01-preview}
+    volumes:
+      - ./outputs:/app/outputs
+      - ./data:/app/data
+      - ./configs:/app/configs
+      - ./powerbi:/app/powerbi
+    command: [
+      "python",
+      "src/main.py",
+      "--base-dir",
+      "/app",
+      "--processed-dir",
+      "/app/data/processed",
+      "--outputs-dir",
+      "/app/outputs",
+      "--db-path",
+      "/app/outputs/claims_analytics.db",
+      "--powerbi-dir",
+      "/app/powerbi/data"
+    ]

@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Runtime outputs
+outputs/
+outputs_*/
+data/processed/
+data/processed_*/
+powerbi/data/
+powerbi/data_*/
+configs/mappings/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

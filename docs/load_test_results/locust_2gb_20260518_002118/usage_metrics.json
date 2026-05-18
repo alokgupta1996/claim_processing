@@ -1,0 +1,24 @@
+{
+  "started_at_utc": "2026-05-17T18:52:34.874653+00:00",
+  "finished_at_utc": "2026-05-17T18:52:41.081876+00:00",
+  "duration_seconds": 6.207,
+  "api_calls_total": 0,
+  "api_calls_by_kind": {
+    "chat_completions": 0,
+    "embeddings": 0
+  },
+  "api_errors_total": 0,
+  "token_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0
+  },
+  "models": {},
+  "context": {
+    "run_mode": "full",
+    "use_llm_narrative": true,
+    "processed_dir": "/app/data/processed/locust_2gb_20260518_002118",
+    "outputs_dir": "/app/outputs/locust_2gb_20260518_002118",
+    "powerbi_dir": "/app/powerbi/data/locust_2gb_20260518_002118"
+  }
+}

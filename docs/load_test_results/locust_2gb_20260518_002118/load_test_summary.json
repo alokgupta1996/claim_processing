@@ -1,0 +1,28 @@
+﻿{
+    "run_id":  "locust_2gb_20260518_002118",
+    "docker_memory_limit_bytes":  2147483648,
+    "docker_memory_limit_gb":  2,
+    "locust":  {
+                   "users":  15,
+                   "spawn_rate":  3,
+                   "run_time":  "45s",
+                   "total_requests":  498,
+                   "total_failures":  0,
+                   "median_ms":  11,
+                   "p95_ms":  46,
+                   "avg_ms":  18.368125230926488,
+                   "rps":  11.27329063508668
+               },
+    "llm_usage":  {
+                      "api_calls_total":  0,
+                      "api_calls_by_kind":  {
+                                                "chat_completions":  0,
+                                                "embeddings":  0
+                                            },
+                      "api_errors_total":  0,
+                      "input_tokens":  0,
+                      "output_tokens":  0,
+                      "total_tokens":  0,
+                      "usage_metrics_path":  "C:\\Users\\alok.gupta\\OneDrive - Neostats Analytics Solutions L.L.C\\Desktop\\Assignment\\new_folder\\outputs\\locust_2gb_20260518_002118\\usage_metrics.json"
+                  }
+}

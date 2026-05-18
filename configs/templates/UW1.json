@@ -1,0 +1,47 @@
+{
+  "source_uw": "UW1",
+  "country": "Oman",
+  "file_name": "UW1_OmanInsurance_RawData.xlsx",
+  "members_sheet": "Members_List",
+  "claims_sheet": "Claims_Register",
+  "members_skiprows": 1,
+  "claims_skiprows": 1,
+  "expected_member_rows": 10,
+  "expected_claim_rows": 12,
+  "expected_member_columns": [
+    "Card No",
+    "Cert No",
+    "Date of Birth",
+    "Member Name",
+    "Sex",
+    "Relation",
+    "Nationality",
+    "Class",
+    "Network Tier",
+    "Eff Date",
+    "Exp Date",
+    "Age",
+    "Plan",
+    "Annual Prem (Fils)"
+  ],
+  "expected_claim_columns": [
+    "Claim Ref",
+    "Card No",
+    "Member Name",
+    "Service Date",
+    "ICD Code",
+    "Diagnosis",
+    "Claim Category",
+    "Service Type",
+    "Provider Name",
+    "Billed (Fils)",
+    "Deductible (Fils)",
+    "Approved (Fils)",
+    "Paid (Fils)",
+    "Status",
+    "PA Ref",
+    "Episode",
+    "Quarter"
+  ]
+}
+
