@@ -1,199 +1,208 @@
 # Health Insurance Claims Automation Pipeline
 
-End-to-end backend and UI solution for ingesting multi-underwriter claims files, standardizing to a master schema, validating outputs, loading a SQLite analytics database, and running via CLI, Streamlit UI, or Docker.
+Production-style assignment solution for ingesting variable underwriter Excel files, confirming column mappings, generating standardized outputs, loading analytics tables, and producing report artifacts.
 
-## Assignment Alignment
+## What It Does (Current Behavior)
 
-Implemented:
-- Phase 1-8 backend and platform foundation
-- Ingestion for UW1/UW2/UW3 with source-specific parsing rules
-- Deterministic transformation into `master_census.csv` and `master_claims.csv`
-- Validation report generation (`validation_report.json`)
-- SQLite load (`claims_analytics.db`) with KPI summary table
-- Streamlit upload + mapping confirmation UI
-- AI-assisted mapping suggestions with confidence tiers
-- Mapping profile save/load and schema compatibility scoring
-- Dockerized runtime (UI + optional batch pipeline service)
-- Power BI execution pack: pre-aggregated reporting tables + theme + page build guide
-- Automated multi-page PDF report generation using seaborn/matplotlib
-- Optional Azure OpenAI narrative generation for report text sections
-
-Pending for final assignment packaging:
-- Power BI `.pbix` file creation in Power BI Desktop (manual authoring step)
+- Accepts one or more incoming UW Excel files (`.xlsx`) through:
+  - Streamlit UI
+  - FastAPI upload endpoint
+  - CLI batch run
+- Auto-detects which template each file matches using `configs/templates/*.json`.
+- Suggests column mappings using staged AI logic:
+  - rules + fuzzy scores
+  - SentenceTransformer semantic similarity
+  - optional OpenAI embeddings
+  - LLM fallback when unresolved
+- Requires user confirmation in UI before pipeline execution.
+- Runs deterministic transformation and validation pipeline.
+- Generates:
+  - `master_census.csv`
+  - `master_claims.csv`
+  - `validation_report.json`
+  - `claims_analytics.db`
+  - `Claims_Analysis_Report.pdf`
+  - Power BI handoff assets (CSV + guide/theme/checklists)
+- Supports run modes:
+  - `full`
+  - `pdf_only`
+  - `powerbi_handoff`
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-  A["UW Raw Excel Files"] --> B["Ingestion Layer"]
-  B --> C["AI-Assisted Mapping Suggestion"]
-  C --> D["User Mapping Confirmation"]
-  D --> E["Deterministic Transformation"]
-  E --> F["Validation Engine"]
-  E --> G["Master CSV Outputs"]
-  E --> H["SQLite Loader"]
-  H --> I["members + claims + kpi_summary"]
-  G --> J["Power BI Dataset Source"]
-  I --> J
-  D --> K["Mapping Profile Save/Load"]
+  A["Incoming XLSX Upload(s)"] --> B["Template Detection (configs/templates/*.json)"]
+  B --> C["Raw Table Extraction (members/claims)"]
+  C --> D["Mapping Suggestion Engine"]
+  D --> D1["Rules + Fuzzy + Alias Scoring"]
+  D --> D2["SentenceTransformer Semantic Stage"]
+  D --> D3["Optional OpenAI Embedding Stage"]
+  D --> D4["LLM Fallback (only unresolved fields)"]
+  D4 --> E["User Confirmation (UI) / Auto Accept (API)"]
+  E --> F["Deterministic Transform (USD normalization, flags, age groups)"]
+  F --> G["Validation Report JSON"]
+  F --> H["Master CSV Outputs"]
+  F --> I["SQLite Load (members, claims, kpi_summary)"]
+  H --> J["Power BI Prep Tables"]
+  J --> K["Power BI Handoff Package (optional)"]
+  I --> L["Analytical PDF Report (seaborn/matplotlib + optional LLM narrative)"]
 ```
 
-## Project Structure
+## End-to-End Usage
 
-```text
-src/
-  main.py
-  claims_pipeline/
-    config.py
-    ingestion.py
-    transform.py
-    validation.py
-    database.py
-    mapping.py
-    mapping_profiles.py
-    pipeline.py
-  ui/
-    app.py
-tests/
-data/
-  processed/
-outputs/
-configs/
-  mappings/
-Dockerfile
-docker-compose.yml
-```
+## 1) Prerequisites
 
-## Local Run (CLI)
+- Python `3.9+` (recommended `3.12`)
+- Docker Desktop (for containerized run)
 
-Install dependencies:
+## 2) Clone and Setup
 
 ```bash
+git clone https://github.com/alokgupta1996/claim_processing.git
+cd claim_processing
+python -m venv .venv
+.venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
 
-Run pipeline:
+Optional env file:
 
 ```bash
-python src/main.py
+copy .env.example .env
 ```
 
-Run modes:
+Configure `.env` if using Azure/OpenAI narrative or embedding stages:
+- `AZURE_OPENAI_API_KEY`
+- `AZURE_OPENAI_ENDPOINT`
+- `AZURE_OPENAI_DEPLOYMENT`
+- `AZURE_OPENAI_API_VERSION`
+- `OPENAI_API_KEY` (optional for embedding stage)
 
-```bash
-# full (default): PDF + Power BI CSV exports
-python src/main.py --run-mode full
-
-# PDF only: generate report without writing Power BI CSV exports
-python src/main.py --run-mode pdf_only
-
-# Power BI handoff: PDF + CSV + PBIX build package/instructions
-python src/main.py --run-mode powerbi_handoff --pbix-file-name claims_dashboard.pbix
-```
-
-Expected outputs:
-- `data/processed/master_census.csv`
-- `data/processed/master_claims.csv`
-- `outputs/validation_report.json`
-- `outputs/claims_analytics.db`
-- `outputs/Claims_Analysis_Report.pdf`
-- `powerbi/data/*.csv` (dashboard-ready summary tables)
-
-## Streamlit UI Run
+## 3) Run with Streamlit UI (Recommended)
 
 ```bash
 python -m streamlit run src/ui/app.py --server.port 8501
 ```
 
-Open:
-- `http://localhost:8501`
+Open: `http://localhost:8501`
 
-UI workflow:
+UI flow:
 1. Upload one or more UW files.
-2. Review AI mapping suggestions and confidence levels.
-3. Optionally load/save mapping profiles under `configs/mappings`.
-4. Choose pipeline mode:
-   - Full (PDF + Power BI CSV)
-   - PDF Only
-   - Power BI Handoff
-5. Confirm low-confidence mappings.
-6. Run pipeline and inspect generated artifact paths.
+2. Check template detection + assignment.
+3. (Optional) Load mapping profile.
+4. Review/adjust mapping suggestions.
+5. Select run mode (`full` / `pdf_only` / `powerbi_handoff`).
+6. Run pipeline.
+7. Download report outputs from UI buttons.
 
-## Docker Run
+## 4) Run with API (Programmatic)
 
-Start UI service:
+Start API:
 
 ```bash
-docker compose up -d streamlit
+python -m uvicorn api.app:app --host 0.0.0.0 --port 8502
 ```
 
-Run backend batch service:
+Docs:
+- `http://localhost:8502/docs`
+
+Health:
+
+```bash
+curl http://localhost:8502/api/health
+```
+
+Upload and run:
+
+```bash
+curl -X POST "http://localhost:8502/api/upload-and-run" ^
+  -F "files=@UW1_OmanInsurance_RawData.xlsx" ^
+  -F "files=@UW2_NationalLife_RawData.xlsx" ^
+  -F "run_mode=pdf_only" ^
+  -F "ai_engine=sentence_transformer"
+```
+
+## 5) Run with CLI
+
+```bash
+python src/main.py --run-mode full
+python src/main.py --run-mode pdf_only
+python src/main.py --run-mode powerbi_handoff --pbix-file-name claims_dashboard.pbix
+```
+
+## 6) Run with Docker
+
+Build and start UI + API:
+
+```bash
+docker compose up -d --build streamlit api
+```
+
+Run batch pipeline:
 
 ```bash
 docker compose --profile batch run --rm pipeline
 ```
 
-Stop services:
+Stop:
 
 ```bash
 docker compose down
 ```
 
-## Testing
+Ports:
+- Streamlit: `8501`
+- API: `8502`
 
-Run test suite:
+## Outputs
+
+Primary outputs are created under:
+- `data/processed/` (or run-specific subfolder)
+- `outputs/` (or run-specific subfolder)
+- `powerbi/data/` (in `full` / `powerbi_handoff`)
+
+Common files:
+- `master_census.csv`
+- `master_claims.csv`
+- `validation_report.json`
+- `claims_analytics.db`
+- `Claims_Analysis_Report.pdf`
+- `usage_metrics.json`
+
+If `powerbi_handoff` mode is selected:
+- PBIX build handoff folder under `outputs/.../powerbi_handoff/`
+
+## Template Generalization
+
+Templates are not hardcoded to only UW1/UW2/UW3.
+
+Add new template support by creating a JSON spec in:
+- `configs/templates/`
+
+Each spec defines:
+- workbook filename pattern/reference
+- sheet names
+- skip rows
+- expected members/claims column sets
+
+The detector and mapping UI/API automatically include new templates on restart.
+
+## Power BI Notes
+
+This repo prepares all Power BI inputs and handoff artifacts.
+Actual `.pbix` authoring remains a Power BI Desktop manual step.
+
+Included assets:
+- `powerbi/theme_assignment.json`
+- `powerbi/PHASE10_PBI_BUILD_GUIDE.md`
+- `powerbi/DAX_MEASURES.md`
+- `powerbi/PAGE_LAYOUT_CHECKLIST.md`
+
+## Tests
 
 ```bash
 python -m pytest -q
 ```
 
-Current status: all implemented phase tests pass.
-
-## Power BI Build Assets
-
-- Theme file: `powerbi/theme_assignment.json`
-- Page-by-page guide: `powerbi/PHASE10_PBI_BUILD_GUIDE.md`
-- DAX pack: `powerbi/DAX_MEASURES.md`
-- Final QA checklist: `powerbi/PAGE_LAYOUT_CHECKLIST.md`
-- Prebuilt Power BI data tables: `powerbi/data/*.csv` (generated by pipeline)
-- Auto-generated PBIX handoff package (in handoff mode): `outputs/powerbi_handoff/`
-
-## Optional LLM Narrative (Azure OpenAI)
-
-Set these environment variables to enable model-generated report text:
-- `AZURE_OPENAI_API_KEY`
-- `AZURE_OPENAI_ENDPOINT`
-- `AZURE_OPENAI_DEPLOYMENT`
-- `AZURE_OPENAI_API_VERSION`
-
-If not configured, the report uses deterministic fallback narrative text.
-
-## Data and Transformation Rules
-
-High-level normalization highlights:
-- UW1: skip merged header row; Fils to USD conversion.
-- UW2: parse integer dates (`YYYYMMDD`); direct USD values.
-- UW3: skip metadata rows; Excel serial DOB parsing; QAR to USD conversion.
-- Illness and benefit categories standardized across sources.
-- Derived fields: `age_group`, `month`, `quarter`, `year`, and risk flags.
-
-## Template Registry (Generalized Inputs)
-
-Template specs are now loaded from `configs/templates/*.json` instead of being hard-coded.
-
-To onboard a new incoming template:
-1. Add a new JSON spec in `configs/templates/` (same shape as `UW1.json`, `UW2.json`, `UW3.json`).
-2. Include sheet names, skip rows, and expected columns.
-3. Reopen Streamlit UI: the new template appears in auto-detection and assignment options.
-
-## Why This Design Is Reviewer-Friendly
-
-- Deterministic core transformations and validations for auditability.
-- AI assistance is limited to mapping suggestions, followed by user confirmation.
-- Reusable mapping profiles reduce repeat manual work for new insurer formats.
-- Docker support enables one-command runtime setup.
-- Comprehensive tests protect ingestion, transformation, validation, DB load, mapping logic, and container contract.
-
-## Submission Notes
-
-Use this repository as the backend + orchestration foundation. Complete the Power BI dashboard pages and final report export as the final assignment layer on top of the generated CSV/SQLite outputs.
+Covers ingestion, transform, validation, DB, mapping, template detection/registry, API upload flow, docker contract, and docs/assets checks.
