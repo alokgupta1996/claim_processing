@@ -198,6 +198,7 @@ Included assets:
 - `powerbi/PHASE10_PBI_BUILD_GUIDE.md`
 - `powerbi/DAX_MEASURES.md`
 - `powerbi/PAGE_LAYOUT_CHECKLIST.md`
+- `powerbi/POWERBI_HANDOFF_EXCEL_GUIDE.md`
 
 ## Tests
 
