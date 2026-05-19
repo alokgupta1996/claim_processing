@@ -1,0 +1,5 @@
+metric,benchmark_value
+loss_ratio_pct,88.0
+cost_per_claim_usd,200.0
+pec_ratio_pct,65.0
+provider_concentration_pct,25.0

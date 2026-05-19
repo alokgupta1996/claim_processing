@@ -1,0 +1,11 @@
+master_member_id,source_uw,policy_number,country,insurer_name,member_name,gender,relationship,date_of_birth,age,age_group,nationality_code,benefit_class,network_tier,annual_premium_usd,copay_pct,deductible_usd,member_status
+UW2_NLG-M001,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Sultan Al Qahtani,Male,Employee,1982-06-14,42,41-50,SAU,A,Gold,1240,,,Active
+UW2_NLG-M002,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Nora Al Qahtani,Female,Spouse,1985-09-20,39,31-40,SAU,A,Gold,980,,,Active
+UW2_NLG-M003,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Faisal Al Qahtani,Male,Child,2012-03-10,12,11-20,SAU,A,Gold,620,,,Active
+UW2_NLG-M004,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Ibrahim Hassan,Male,Employee,1979-11-05,45,41-50,SAU,B,Silver,920,,,Active
+UW2_NLG-M005,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Aisha Hassan,Female,Spouse,1983-03-18,41,41-50,SAU,B,Silver,740,,,Active
+UW2_NLG-M006,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Marcos Rodrigues,Male,Employee,1988-07-22,36,31-40,BRA,B,Silver,920,,,Active
+UW2_NLG-M007,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Diana Petrov,Female,Employee,1991-11-30,33,31-40,BGR,C,Bronze,680,,,Active
+UW2_NLG-M008,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Hassan Al Zahrani,Male,Employee,1976-04-25,48,41-50,SAU,A,Gold,1240,,,Active
+UW2_NLG-M009,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Zainab Al Zahrani,Female,Spouse,1980-08-01,44,41-50,SAU,A,Gold,980,,,Active
+UW2_NLG-M010,UW2,NLG-POL-SAU-2024,Saudi Arabia,National Life,Filippo Conti,Male,Employee,1985-02-15,39,31-40,ITA,C,Bronze,680,,,Active

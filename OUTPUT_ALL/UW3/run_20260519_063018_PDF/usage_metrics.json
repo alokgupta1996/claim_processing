@@ -1,0 +1,31 @@
+{
+  "started_at_utc": "2026-05-19T06:30:19.165352+00:00",
+  "finished_at_utc": "2026-05-19T06:30:48.802092+00:00",
+  "duration_seconds": 29.637,
+  "api_calls_total": 1,
+  "api_calls_by_kind": {
+    "chat_completions": 1,
+    "embeddings": 0
+  },
+  "api_errors_total": 0,
+  "token_usage": {
+    "input_tokens": 333,
+    "output_tokens": 404,
+    "total_tokens": 737
+  },
+  "models": {
+    "ai-test-gpt-4o": {
+      "api_calls": 1,
+      "input_tokens": 333,
+      "output_tokens": 404,
+      "total_tokens": 737
+    }
+  },
+  "context": {
+    "run_mode": "full",
+    "use_llm_narrative": true,
+    "processed_dir": "/app/data/processed/run_20260519_063018",
+    "outputs_dir": "/app/outputs/run_20260519_063018",
+    "powerbi_dir": "/app/powerbi/data/run_20260519_063018"
+  }
+}

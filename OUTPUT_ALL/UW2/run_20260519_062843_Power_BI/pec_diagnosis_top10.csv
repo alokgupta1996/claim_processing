@@ -1,0 +1,6 @@
+icd10_code,diagnosis_description,total_claims,total_paid_usd
+I10,Essential Primary Hypertension,2,555
+E11,Type 2 Dm,1,400
+E11,Type 2 Dm Follow Up,1,364
+J45,Bronchial Asthma,1,300
+E78,Dyslipidaemia,1,218

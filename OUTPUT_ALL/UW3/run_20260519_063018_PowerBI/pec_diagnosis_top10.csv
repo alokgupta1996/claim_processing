@@ -1,0 +1,7 @@
+icd10_code,diagnosis_description,total_claims,total_paid_usd
+I10,Essential Hypertension,2,434.06000000000006
+E11,Type 2 Diabetes,1,311.54
+J45,Asthma,1,187.91
+E78,Hyperlipidaemia,1,182.42
+E11,Type 2 Diabetes Follow-Up,1,178.02
+K21,Gerd,1,112.64

@@ -200,6 +200,21 @@ Included assets:
 - `powerbi/PAGE_LAYOUT_CHECKLIST.md`
 - `powerbi/POWERBI_HANDOFF_EXCEL_GUIDE.md`
 
+## Why Python-First (Without Power BI) Can Be Better
+
+For many teams, this implementation provides the same business insights without Power BI licensing or desktop dependency.
+
+- Same core insight coverage:
+  KPI summary, trend analysis, demographics, PEC/chronic drilldown, provider concentration, benchmarks.
+- No extra BI license cost:
+  The report and visuals are generated with Python (`seaborn`/`matplotlib`) and shipped as PDF + data artifacts.
+- Easier integration:
+  Can be called from API, UI, CLI, schedulers, and Docker in one stack.
+- Better automation:
+  Fully scriptable output generation, reproducible runs, and simpler CI/CD integration.
+- Flexible handoff:
+  If client needs Power BI later, the pipeline already emits Power BI-ready datasets and docs.
+
 ## Tests
 
 ```bash

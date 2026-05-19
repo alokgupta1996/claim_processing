@@ -1,0 +1,11 @@
+master_member_id,source_uw,policy_number,country,insurer_name,member_name,gender,relationship,date_of_birth,age,age_group,nationality_code,benefit_class,network_tier,annual_premium_usd,copay_pct,deductible_usd,member_status
+UW1_OIC-001,UW1,POL-OIC-2024-001,Oman,Oman Insurance,Ahmed Al Rashid,Male,Employee,1985-03-12,39,31-40,OMN,A,Gold,220.15,,,Active
+UW1_OIC-002,UW1,POL-OIC-2024-001,Oman,Oman Insurance,Fatima Al Rashid,Female,Spouse,1987-07-20,37,31-40,OMN,A,Gold,176.12,,,Active
+UW1_OIC-003,UW1,POL-OIC-2024-001,Oman,Oman Insurance,Omar Al Rashid,Male,Child,2015-09-05,9,0-10,OMN,A,Gold,108.78,,,Active
+UW1_OIC-004,UW1,POL-OIC-2024-001,Oman,Oman Insurance,Khalid Al Mansoori,Male,Employee,1978-11-30,46,41-50,ARE,B,Silver,186.48,,,Active
+UW1_OIC-005,UW1,POL-OIC-2024-001,Oman,Oman Insurance,Maryam Al Mansoori,Female,Spouse,1982-04-15,42,41-50,ARE,B,Silver,150.22,,,Active
+UW1_OIC-006,UW1,POL-OIC-2024-001,Oman,Oman Insurance,Priya Nair,Female,Employee,1990-06-22,34,31-40,IND,C,Bronze,116.55,,,Active
+UW1_OIC-007,UW1,POL-OIC-2024-001,Oman,Oman Insurance,Ravi Kumar,Male,Employee,1983-02-14,41,41-50,IND,C,Bronze,116.55,,,Active
+UW1_OIC-008,UW1,POL-OIC-2024-001,Oman,Oman Insurance,Sunita Kumar,Female,Spouse,1985-08-19,39,31-40,IND,C,Bronze,98.42,,,Active
+UW1_OIC-009,UW1,POL-OIC-2024-001,Oman,Oman Insurance,John Matthews,Male,Employee,1975-12-01,49,41-50,GBR,A,Gold,220.15,,,Active
+UW1_OIC-010,UW1,POL-OIC-2024-001,Oman,Oman Insurance,Sarah Matthews,Female,Spouse,1978-05-28,46,41-50,GBR,A,Gold,176.12,,,Active

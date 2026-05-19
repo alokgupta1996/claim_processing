@@ -1,0 +1,76 @@
+{
+  "passed": true,
+  "summary": {
+    "master_census_rows": 10,
+    "master_claims_rows": 12,
+    "total_checks": 13,
+    "passed_checks": 13
+  },
+  "checks": [
+    {
+      "name": "row_count_master_census",
+      "passed": true,
+      "details": "rows=10"
+    },
+    {
+      "name": "row_count_master_claims",
+      "passed": true,
+      "details": "rows=12"
+    },
+    {
+      "name": "unique_master_member_id",
+      "passed": true,
+      "details": "duplicates=0"
+    },
+    {
+      "name": "unique_master_claim_id",
+      "passed": true,
+      "details": "duplicates=0"
+    },
+    {
+      "name": "claims_member_fk_integrity",
+      "passed": true,
+      "details": "missing=0, unmatched=0"
+    },
+    {
+      "name": "valid_date_date_of_birth",
+      "passed": true,
+      "details": "invalid=0"
+    },
+    {
+      "name": "valid_date_claim_date",
+      "passed": true,
+      "details": "invalid=0"
+    },
+    {
+      "name": "valid_date_service_date",
+      "passed": true,
+      "details": "invalid=0"
+    },
+    {
+      "name": "non_negative_annual_premium_usd",
+      "passed": true,
+      "details": "invalid=0, negatives=0"
+    },
+    {
+      "name": "non_negative_billed_amount_usd",
+      "passed": true,
+      "details": "invalid=0, negatives=0"
+    },
+    {
+      "name": "non_negative_paid_amount_usd",
+      "passed": true,
+      "details": "invalid=0, negatives=0"
+    },
+    {
+      "name": "non_negative_copay_usd",
+      "passed": true,
+      "details": "invalid=0, negatives=0"
+    },
+    {
+      "name": "quarter_domain",
+      "passed": true,
+      "details": "invalid=0"
+    }
+  ]
+}

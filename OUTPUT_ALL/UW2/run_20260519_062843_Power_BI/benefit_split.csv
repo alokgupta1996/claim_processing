@@ -1,0 +1,4 @@
+benefit_type,total_claims,total_paid_usd,claims_share_pct
+Emergency,1,727,8.33
+Inpatient,3,6455,25.0
+Outpatient,8,2319,66.67

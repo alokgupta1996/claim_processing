@@ -1,0 +1,13 @@
+master_member_id,source_uw,policy_number,country,insurer_name,member_name,gender,relationship,date_of_birth,age,age_group,nationality_code,benefit_class,network_tier,annual_premium_usd,copay_pct,deductible_usd,member_status
+UW3_QGI-C001,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Mohammed Al Thani,Male,Employee,1983-03-03,42,41-50,QAT,A,Gold,1153.85,0.1,,Active
+UW3_QGI-C002,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Hessa Al Thani,Female,Spouse,1986-09-30,39,31-40,QAT,A,Gold,934.07,0.1,,Active
+UW3_QGI-C003,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Jassim Al Thani,Male,Child,2023-01-01,4,0-10,QAT,A,Gold,576.92,0.1,,Active
+UW3_QGI-C004,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Pedro Santos,Male,Employee,1983-12-02,41,41-50,BRA,B,Silver,769.23,0.2,,Active
+UW3_QGI-C005,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Ana Santos,Female,Spouse,1992-01-01,32,31-40,BRA,B,Silver,604.4,0.2,,Active
+UW3_QGI-C006,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Kwame Asante,Male,Employee,1977-12-31,46,41-50,GHA,B,Silver,769.23,0.2,,Active
+UW3_QGI-C007,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Yu Ming,Male,Employee,1990-01-01,37,31-40,CHN,C,Bronze,494.51,0.3,,Active
+UW3_QGI-C008,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Li Wei,Female,Spouse,1993-12-31,33,31-40,CHN,C,Bronze,384.62,0.3,,Active
+UW3_QGI-C009,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Amira Benali,Female,Employee,1981-12-28,44,41-50,DZA,B,Silver,769.23,0.2,,Active
+UW3_QGI-C010,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Tariq Farouk,Male,Employee,1986-11-30,39,31-40,EGY,C,Bronze,494.51,0.3,,Active
+UW3_QGI-C011,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Layla Farouk,Female,Spouse,1992-12-31,32,31-40,EGY,C,Bronze,384.62,0.3,,Active
+UW3_QGI-C012,UW3,QGI-GRP-QAT-2024-001,Qatar,Qatar General,Arjun Sharma,Male,Employee,1985-09-01,40,31-40,IND,B,Silver,769.23,0.2,,Active
